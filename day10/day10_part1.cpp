@@ -13,19 +13,18 @@
 
 using namespace std;
 
-
-vector<int64_t> getDiff(vector<int64_t>& vect);
-bool CheckIfZero(vector<int64_t>& vect);
+vector<int> findS(vector<vector<char>>& vect);
+vector<char> getStartPipes(vector<vector<char>>& sketch, vector<int>& vect);
 
 int main()
 {
     string line;
     ifstream myfile1;
-    string filename = "input1.txt";
-    int64_t sum = 0;
-    vector<int> sol;
+    string filename = "input2.txt";
 
-    vector<int64_t> vNextHistory;
+    int64_t ans = 0;
+
+    vector<vector<char>> pipeSketch;
 
     myfile1.open(filename);
 
@@ -34,96 +33,28 @@ int main()
 
     while (getline(myfile1, line))
     {
-        vector<int64_t> vDataset;
-        vector<vector<int64_t>> vSetAndDiffs;
-        vector<int64_t> vCurrDiff;
-        vector<int64_t> vSequence;
-
-
-        string tempString;
-        stringstream ss(line);
-
-        while(getline(ss, tempString, ' '))
+        vector<char> tempVector;
+        for(int i = 0; i < line.size(); i++)
         {
-            vDataset.push_back(stoi(tempString));
+            tempVector.push_back(line[i]);
         }
 
-        /*for(int i = 0; i < line.size(); i++)
-        {
-                        
-            if (isdigit(line[i]) &&  i != (line.size()-1))
-            {   
-                if(number == -1) number = 0;
-                number =  number*10 + line[i]- '0';
-            }
-            else if (isdigit(line[i]) && i == (line.size()-1) )
-            {
-                if(number == -1) number = 0;
-                number = number*10 + line[i] - '0';
-                vDataset.push_back(number);
-                number = -1;               
-            }
-            else if (number > -1)
-            {
-                vDataset.push_back(number);
-                number = -1;
-            } 
-                      
-        }*/
+        pipeSketch.push_back(tempVector);
+        tempVector.clear();
 
-        vSetAndDiffs.push_back(vDataset);
-        vSequence = vDataset;
-        int diffSum = 1;
-        
-        sol.push_back(vSequence.back());
-        while(!CheckIfZero(vSequence))
-        {
-            vCurrDiff = getDiff(vSequence);
-            vSetAndDiffs.push_back(vCurrDiff);
-            vSequence = vCurrDiff;
-            sol.push_back(vSequence.back());
-        }
-
-
-        for(int i = vSetAndDiffs.size()-1; i >= 0 ; i--)
-        {
-            
-            if(i == vSetAndDiffs.size()-1)
-            {
-                vSetAndDiffs[i].push_back(0);
-                
-            }
-            else
-            {
-                int64_t pushValue;
-                vector<int64_t> prevDiff = vSetAndDiffs[i+1];
-                int prevLastValue = prevDiff[prevDiff.size()-1];
-                int currLastValue = vSetAndDiffs[i][vSetAndDiffs[i].size()-1];
-
-                pushValue = currLastValue + prevLastValue;
-                //pushValue =  vSetAndDiffs[i][vSetAndDiffs[i].size()-1] + vSetAndDiffs[i+1][vSetAndDiffs[i+1].size()-1];
-
-                vSetAndDiffs[i].push_back(pushValue);
-            }
-            
-            //cout << vSetAndDiffs[i][0] << endl;
-        }
-
-
-        vNextHistory.push_back(vSetAndDiffs[0][vSetAndDiffs[0].size()-1]);
-        //cout << "STOI = " << stoi("-54") << endl;
-        lineCount++;
-        //cout << endl;
-        
     }
     myfile1.close();
 
-    for(int i = 0; i < vNextHistory.size(); i++)
-    {
-        sum += vNextHistory[i];
-    }
-    
-    cout << endl << "The sum is = " << sum << endl;
+    vector<int> startPos = findS(pipeSketch); // position (x, y)
+    vector<char> startPipes = getStartPipes(pipeSketch, startPos);
+
+    //Solution suggestion goLeft, goRight, goUp and goDown functions? which returns next move?
+
+
+
+    cout << "Position is at (" << startPos[0] << ", " << startPos[1] << ")" << endl;
+
+    cout << endl << "The sum is = " << ans << endl;
     cout << endl;
 /*
     ofstream myfile;
@@ -133,35 +64,63 @@ int main()
         myfile << vNextHistory[i] << "\n";
     }
     myfile.close();
-    */
+*/
 
 }
 
-bool CheckIfZero(vector<int64_t>& vect)
-{   
-    bool isZero = true;
+vector<int> findS(vector<vector<char>>& vect)
+{
+    vector<int> position;
+    
     for(int i = 0; i < vect.size(); i++)
     {
-        if(vect[i]!=0)
+
+        for(int j = 0; j < vect[i].size(); j++)
         {
-            isZero = false;
+            if(vect[i][j] == 'S')
+            {
+                position.push_back(j);
+                position.push_back(i);
+            }
         }
     }
 
-    return isZero;
+    return position;
 }
 
-
-vector<int64_t> getDiff(vector<int64_t>& vect)
+vector<char> getStartPipes(vector<vector<char>>& sketch, vector<int>& vect)
 {
-    vector<int64_t> vtempDiff;
-    int64_t elementDiff;
-
-    for(int i = 0; i < vect.size()-1; i++)
-    {
-        elementDiff = vect[i+1] - vect[i];
-        vtempDiff.push_back(elementDiff);
+    vector<char> pipes;
+    int posx = vect[0];
+    int posy = vect[1];
+    
+    if(posx == 0){
+        pipes.push_back('.');
+    }
+    else{
+        pipes.push_back(sketch[posy][posx-1]); //LEFT
     }
 
-    return vtempDiff;
+    if(posy == 0){
+        pipes.push_back('.');
+    }
+    else{
+        pipes.push_back(sketch[posy-1][posx]); //UP
+    }
+
+    if(posx ==  sketch[0].size()-1){
+        pipes.push_back('.');
+    }
+    else{
+        pipes.push_back(sketch[posy][posx+1]); //RIGHT
+    }
+
+    if(posy == sketch.size()-1){
+        pipes.push_back('.');
+    }
+    else{
+        pipes.push_back(sketch[posy+1][posx]); //DOWN
+    }
+
+    return pipes;
 }
